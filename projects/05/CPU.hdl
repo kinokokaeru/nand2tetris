@@ -40,4 +40,35 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    // CPU
+    Mux16(a=w3 ,b=instruction ,sel=wd3 ,out=w0 );
+    ARegister(in=w0 ,load=wd1 ,out=w1 ,out[0..14]=addressM);
+    Mux16(a=w1 ,b=inM ,sel=instruction[12] ,out=w2 );
+    ALU(x=w4 ,y=w2 ,
+        zx=instruction[11] ,nx=instruction[10] ,
+        zy=instruction[9] ,ny=instruction[8] ,
+        f=instruction[7] ,no=instruction[6] ,
+        out=w3 ,out=outM ,zr=zr ,ng=ng );
+    And(a=instruction[4] ,b=instruction[15] ,out=w5);
+    DRegister(in=w3 ,load=w5 ,out=w4 );
+    PC(in=w1 ,load=jmp ,inc=true ,reset=reset ,out[0..14]=pc );
+    And(a=instruction[3] ,b=instruction[15] ,out=writeM );
+
+
+    // Control Destination
+    Mux(a=true ,b=wd0 ,sel=instruction[15] ,out=wd1 );
+    Mux(a=false ,b=true ,sel=instruction[5] ,out=wd0 );
+    Mux(a=true ,b=wd2 ,sel=instruction[15] ,out=wd3 );
+    Mux(a=true ,b=false ,sel=instruction[5] ,out=wd2 );
+
+    // Control Jump(fetch)
+    Not(in=zr ,out=nzr );
+    Not(in=ng ,out=nng );
+    And(a=nzr ,b=nng ,out=pos );
+    And(a=pos ,b=instruction[0] ,out=wj0 );
+    And(a=ng ,b=instruction[2] ,out=wj1 );
+    And(a=zr ,b=instruction[1] ,out=wj2 );
+    Or(a=wj0 ,b=wj1 ,out=wj3 );
+    Or(a=wj3 ,b=wj2 ,out=wj4 );
+    And(a=wj4 ,b=instruction[15] ,out=jmp);
 }

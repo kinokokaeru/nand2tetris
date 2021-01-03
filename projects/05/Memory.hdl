@@ -28,4 +28,11 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    RAM16K(in=in ,load=w0 ,address=address[0..13] ,out=w2 );
+    Screen(in=in ,load=w1 ,address=address[0..12] ,out=w3 );
+    Mux16(a=w2 ,b=w3 ,sel=address[14] ,out=w4 );
+    Keyboard(out=w5 );
+    And(a=address[13] ,b=address[14] ,out=w6 );
+    Mux16(a=w4 ,b=w5 ,sel=w6 ,out=out );
+    DMux(in=load ,sel=address[14] ,a=w0 ,b=w1 );
 }
